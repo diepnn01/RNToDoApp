@@ -6,7 +6,9 @@ import {
     TouchableOpacity,
 } from 'react-native';
 
-export default class TaskItem extends Component {
+import { connect } from 'react-redux';
+
+class TaskItem extends Component {
 
     constructor(props) {
         super(props);
@@ -52,3 +54,4 @@ const styles = StyleSheet.create({
     }
 })
 
+export default connect()(TaskItem)

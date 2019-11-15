@@ -7,13 +7,14 @@ import {
     FlatList,
 } from 'react-native';
 
+import Connect from 'react-redux';
 import TaskItem from './TaskItem';
+import { connect } from 'react-redux';
 
-export default class TaskFlatList extends Component {
+class TaskFlatList extends Component {
 
     constructor(props) {
         super(props);
-        console.log(this.props);
     }
 
     renderITem = (item) => {
@@ -27,6 +28,7 @@ export default class TaskFlatList extends Component {
     }
 
     render() {
+        console.log(this.props);
         return (
             <View style={styles.container}>
                 <FlatList
@@ -54,3 +56,5 @@ const styles = StyleSheet.create({
         fontSize: 32,
     },
 })
+
+export default connect()(TaskFlatList);
