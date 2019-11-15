@@ -6,109 +6,134 @@
  * @flow
  */
 
-import React from 'react';
+import React, { Component } from 'react';
 import {
   SafeAreaView,
   StyleSheet,
-  ScrollView,
   View,
   Text,
-  StatusBar,
 } from 'react-native';
 
-import {
-  Header,
-  LearnMoreLinks,
-  Colors,
-  DebugInstructions,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+import { createStore, combineReducers, applyMiddleware } from 'redux';
+import thunk from 'redux-thunk';
 
-const App: () => React$Node = () => {
-  return (
-    <>
-      <StatusBar barStyle="dark-content" />
-      <SafeAreaView>
-        <ScrollView
-          contentInsetAdjustmentBehavior="automatic"
-          style={styles.scrollView}>
-          <Header />
-          {global.HermesInternal == null ? null : (
-            <View style={styles.engine}>
-              <Text style={styles.footer}>Engine: Hermes</Text>
-            </View>
-          )}
-          <View style={styles.body}>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Step One</Text>
-              <Text style={styles.sectionDescription}>
-                Edit <Text style={styles.highlight}>App.js</Text> to change this
-                screen and then come back to see your edits.
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>See Your Changes</Text>
-              <Text style={styles.sectionDescription}>
-                <ReloadInstructions />
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Debug</Text>
-              <Text style={styles.sectionDescription}>
-                <DebugInstructions />
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Learn More</Text>
-              <Text style={styles.sectionDescription}>
-                Read the docs to discover what to do next:
-              </Text>
-            </View>
-            <LearnMoreLinks />
-          </View>
-        </ScrollView>
+
+
+// State
+let appState = { number: 1, histories: [], errorMsg: '' };
+
+// Actions
+
+const add = {
+  type: "ADD",
+  value: 1
+}
+
+const sub = {
+  type: "SUB",
+  value: 1
+}
+
+const createAction = (number) => {
+  return { type: 'ADD', value: number }
+}
+
+// Reducer
+const numberReducer = (state = appState, action) => {
+
+  switch (action.type) {
+    case 'ADD':
+      const newValue = state.number + action.value
+      state = {
+        ...state,
+        histories: [...state.histories, newValue],
+        number: newValue
+      }
+      state.number += action.value;
+      break;
+    case "SUB":
+      const newVal = state.number - action.value
+      state = {
+        ...state,
+        histories: [...state.histories, newVal],
+        number: newVal
+      }
+      break;
+  }
+  return state;
+}
+
+const errorReducer = (state = appState, action) => {
+
+  switch(action.type) {
+    case 'LESS_THAN_ERROR':
+      state = {
+        ...state,
+        errorMsg: 'Number can not be less than error'
+      }
+      break;
+    default:
+      break;
+  }
+
+  return state;
+}
+
+// Middleware
+const logger = store => next => action => {
+  next(action);
+  console.log('state', store.getState());
+  alert(`State updated ${ JSON.stringify(store.getState())}`);
+}
+
+const checkIsZero = store => next => action => {
+  
+  const currentNumber = store.getState().number.number;
+  if(currentNumber == 0) {
+    next({type:'LESS_THAN_ERROR'});
+  } else {
+    next(action);
+  }
+
+  console.log('Current Number', currentNumber);
+}
+
+
+// Store
+const reducers = combineReducers({number: numberReducer, error: errorReducer});
+const store = createStore(reducers, applyMiddleware(thunk, logger, checkIsZero));
+
+
+// store.dispatch(sub);
+// store.dispatch(sub);
+// Test
+
+const addAfter2s = () => {
+  return dispatch => {
+    setTimeout(() => store.dispatch(sub), 3000)
+  }
+}
+
+store.dispatch(addAfter2s());
+
+
+
+class App extends Component {
+  render() {
+    return (
+      <SafeAreaView style={{ flex: 1 }}>
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <Text style={{ fontSize: 30 }} >Diepnn</Text>
+        </View>
       </SafeAreaView>
-    </>
-  );
+    )
+  }
 };
 
 const styles = StyleSheet.create({
   scrollView: {
-    backgroundColor: Colors.lighter,
-  },
-  engine: {
-    position: 'absolute',
-    right: 0,
-  },
-  body: {
-    backgroundColor: Colors.white,
-  },
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: Colors.black,
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-    color: Colors.dark,
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-  footer: {
-    color: Colors.dark,
-    fontSize: 12,
-    fontWeight: '600',
-    padding: 4,
-    paddingRight: 12,
-    textAlign: 'right',
-  },
+    // backgroundColor: Colors.lighter,
+  }
 });
 
 export default App;
